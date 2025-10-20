@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources - CybSOC CTF 2024 </title>
+    <link rel="stylesheet" href="resources.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="header">
+                <div>
+                    <img class="logo"
+                        src="https://pbs.twimg.com/profile_images/1582806733273047040/lpoDa6cU_400x400.jpg"
+                        alt="TAII Logo">
+                </div>
+                <div class="nav-bar">
+                    <nav>
+                        <a href="index.html">Registration</a>
+                        <a href="index.html">Participants</a>
+                        <a href="index.html">Results</a>
+                        <a href="#" class="active">Resources</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 class="main-title">CTF Resources & Tools</h1>
+            <p class="description">Essential resources and tools to help you succeed in the competition</p>
+
+            <div class="instructions">
+                <h2>How to Use This Page</h2>
+                <ul>
+                    <li>Each card below can display a different resource or tool</li>
+                    <li>Enter any URL in the input field and click "Load Iframe" to display content</li>
+                    <li>Use "Reset" to clear the iframe and return to placeholder content</li>
+                    <li>The layout is fully responsive and works on all devices</li>
+                </ul>
+            </div>
+
+            <div class="resources-grid" id="resourcesGrid">
+                <!-- Resources will be dynamically loaded here from backend URLs -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 CybSOC CTF. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // This will come from your backend API - start empty
+        let backendUrls = [];
+
+        // Function to fetch URLs from backend API
+        async function fetchUrlsFromBackend() {
+            try {
+                const response = await fetch('/api/ctf-resources'); // Your API endpoint
+                const urls = await response.json();
+                return urls;
+            } catch (error) {
+                console.error('Failed to fetch URLs from backend:', error);
+                // Fallback to demo URLs if API fails
+                return [
+                    "https://ctf101.org",
+                    "https://overthewire.org/wargames/",
+                    "https://picoctf.org/",
+                    "https://tryhackme.com/",
+                    "https://www.hackthebox.com/",
+                ];
+            }
+        }
+
+        // Function to extract domain name from URL
+        function getDomainFromUrl(url) {
+            try {
+                const domain = new URL(url).hostname;
+                // Remove www. if present
+                return domain.replace(/^www\./, '');
+            } catch (e) {
+                // If URL parsing fails, return a simplified version
+                return url.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
+            }
+        }
+
+        // Function to dynamically create iframe cards from backend URLs
+        function createIframeCardsFromUrls() {
+            const resourcesGrid = document.getElementById('resourcesGrid');
+            resourcesGrid.innerHTML = '';
+
+            backendUrls.forEach((url, index) => {
+                const cardNumber = index + 1;
+                const domain = getDomainFromUrl(url);
+
+                const card = document.createElement('div');
+                card.className = 'resource-card';
+                card.innerHTML = `
+                <div class="card-header">
+                    <h3>${domain}</h3>
+                </div>
+                <div class="iframe-container" id="iframe${cardNumber}">
+                    <iframe src="${url}" frameborder="0"></iframe>
+                </div>
+                <div class="card-footer">
+                <button class="btn btn-primary" onclick="openInNewTab('${url}')">
+                    <i class="fas fa-external-link-alt"></i> Visit Website
+                </button>
+            </div>
+            `;
+                resourcesGrid.appendChild(card);
+            });
+        }
+
+        // Load iframe into specified card
+        function loadIframe(cardNumber) {
+            const urlInput = document.getElementById(`url${cardNumber}`);
+            const iframeContainer = document.getElementById(`iframe${cardNumber}`);
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            // Ensure URL has protocol
+            let finalUrl = url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                finalUrl = 'https://' + url;
+            }
+
+            // Update iframe and title
+            iframeContainer.innerHTML = `<iframe src="${finalUrl}" frameborder="0"></iframe>`;
+
+            // Update the card title with new domain
+            const domain = getDomainFromUrl(finalUrl);
+            const cardHeader = iframeContainer.closest('.resource-card').querySelector('.card-header h3');
+            cardHeader.textContent = domain;
+
+            // Save to localStorage
+            saveUrlToStorage(cardNumber, finalUrl);
+        }
+
+        // Reset iframe to backend default URL
+        function resetIframe(cardNumber) {
+            const iframeContainer = document.getElementById(`iframe${cardNumber}`);
+            const urlInput = document.getElementById(`url${cardNumber}`);
+            const defaultUrl = backendUrls[cardNumber - 1];
+
+            if (defaultUrl) {
+                iframeContainer.innerHTML = `<iframe src="${defaultUrl}" frameborder="0"></iframe>`;
+                urlInput.value = defaultUrl;
+
+                // Update the card title with original domain
+                const domain = getDomainFromUrl(defaultUrl);
+                const cardHeader = iframeContainer.closest('.resource-card').querySelector('.card-header h3');
+                cardHeader.textContent = domain;
+
+                // Remove from localStorage to use default
+                removeUrlFromStorage(cardNumber);
+            }
+        }
+
+        // Save URL to localStorage
+        function saveUrlToStorage(cardNumber, url) {
+            const savedUrls = JSON.parse(localStorage.getItem('ctfResourceUrls')) || {};
+            savedUrls[cardNumber] = url;
+            localStorage.setItem('ctfResourceUrls', JSON.stringify(savedUrls));
+        }
+
+        // Remove URL from localStorage
+        function removeUrlFromStorage(cardNumber) {
+            const savedUrls = JSON.parse(localStorage.getItem('ctfResourceUrls')) || {};
+            delete savedUrls[cardNumber];
+            localStorage.setItem('ctfResourceUrls', JSON.stringify(savedUrls));
+        }
+
+        // Load saved URLs on page load
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Fetch URLs from backend API first
+            backendUrls = await fetchUrlsFromBackend();
+
+            // Create the iframe cards from backend URLs
+            createIframeCardsFromUrls();
+
+            // Load any custom URLs from localStorage (overrides backend defaults)
+            const savedUrls = JSON.parse(localStorage.getItem('ctfResourceUrls')) || {};
+
+            for (let cardNumber in savedUrls) {
+                const customUrl = savedUrls[cardNumber];
+                const iframeContainer = document.getElementById(`iframe${cardNumber}`);
+                const urlInput = document.getElementById(`url${cardNumber}`);
+
+                if (iframeContainer && urlInput) {
+                    iframeContainer.innerHTML = `<iframe src="${customUrl}" frameborder="0"></iframe>`;
+                    urlInput.value = customUrl;
+
+                    // Update the card title with custom domain
+                    const domain = getDomainFromUrl(customUrl);
+                    const cardHeader = iframeContainer.closest('.resource-card').querySelector('.card-header h3');
+                    cardHeader.textContent = domain;
+                }
+            }
+        });
+
+        // Function to update iframes from backend (call this when you receive new URLs from backend)
+        function updateIframesFromBackend(newUrls) {
+            // Update the backend URLs
+            backendUrls.length = 0;
+            backendUrls.push(...newUrls);
+
+            // Recreate the cards with new URLs
+            createIframeCardsFromUrls();
+
+            // Apply any custom URLs from localStorage
+            const savedUrls = JSON.parse(localStorage.getItem('ctfResourceUrls')) || {};
+            for (let cardNumber in savedUrls) {
+                const customUrl = savedUrls[cardNumber];
+                const iframeContainer = document.getElementById(`iframe${cardNumber}`);
+                const urlInput = document.getElementById(`url${cardNumber}`);
+
+                if (iframeContainer && urlInput) {
+                    iframeContainer.innerHTML = `<iframe src="${customUrl}" frameborder="0"></iframe>`;
+                    urlInput.value = customUrl;
+
+                    // Update the card title with custom domain
+                    const domain = getDomainFromUrl(customUrl);
+                    const cardHeader = iframeContainer.closest('.resource-card').querySelector('.card-header h3');
+                    cardHeader.textContent = domain;
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
