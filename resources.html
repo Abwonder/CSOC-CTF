@@ -32,7 +32,13 @@
 
     <main>
         <div class="container">
-            <h1 class="main-title">CTF Resources & Tools</h1>
+            <div class="uptime-header">
+                <h1 class="main-title">CTF Resources & Tools</h1>
+                <div class="uptime-container" id="uptimeCounter">
+                    <span class="uptime-label">Uptime:</span>
+                    <span class="uptime-value">00:00:00</span>
+                </div>
+            </div>
             <p class="description">Essential resources and tools to help you succeed in the competition</p>
 
             <div class="instructions">
@@ -185,6 +191,8 @@
 
         // Load saved URLs on page load
         document.addEventListener('DOMContentLoaded', async function () {
+            // start the uptime counter when the page loads!!-  Note this OLA 
+            startUptimeCounter();
             // Fetch URLs from backend API first
             backendUrls = await fetchUrlsFromBackend();
 
@@ -238,6 +246,23 @@
                 }
             }
         }
+
+        // Uptime Counter Functionality
+        function startUptimeCounter() {
+            const uptimeElement = document.getElementById('uptimeCounter').querySelector('.uptime-value');
+            let seconds = 0;
+
+            setInterval(() => {
+                seconds++;
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+
+                uptimeElement.textContent =
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
     </script>
 </body>
 

@@ -80,6 +80,53 @@ header {
     margin: 30px 0 10px;
 }
 
+/* Uptime Counter */
+/* Uptime Counter Styles */
+.uptime-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 0 10px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.uptime-container {
+    background: var(--primary);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    min-width: 180px;
+    text-align: center;
+}
+
+.uptime-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-right: 8px;
+}
+
+.uptime-value {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+/* Responsive uptime counter */
+@media (max-width: 768px) {
+    .uptime-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .uptime-container {
+        order: -1; /* Move uptime above title on mobile */
+        margin-bottom: 10px;
+    }
+}
+
 .description {
     text-align: center;
     font-size: 1.2rem;
