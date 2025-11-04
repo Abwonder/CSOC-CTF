@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadParticipantsTable();
   loadResultsTable();
   setupEventListeners();
+  initRegistrationHiding();
 });
 
 // Set up event listeners
@@ -119,6 +120,9 @@ function handleRegistration(e) {
 
   // Reset form
   registrationForm.reset();
+
+
+  hideRegistrationElements(); // Hide registration elements after successful registration
 
   // Switch to participants tab
   switchTab("participants");
@@ -278,4 +282,49 @@ function showMessage(text, type) {
   setTimeout(() => {
     messageEl.style.display = "none";
   }, 5000);
+}
+
+
+
+
+// Function to hide the registration tab
+// ======================
+// REGISTRATION HIDING MODULE
+// ======================
+
+/**
+ * Hides registration UI elements and persists state
+ */
+function hideRegistrationElements() {
+  // Hide all registration elements
+  const elementsToHide = [
+    '.tab[data-tab="registration"]',           // Tab button
+    '.nav-bar a[data-tab="registration"]',     // Nav link  
+    '#registration'                            // Tab content
+  ];
+  
+  elementsToHide.forEach(selector => {
+    const element = document.querySelector(selector);
+    if (element) element.style.display = 'none';
+  });
+  
+  // Persist state
+  localStorage.setItem('ctfRegistrationCompleted', 'true');
+}
+
+/**
+ * Initializes registration hiding on page load
+ */
+function initRegistrationHiding() {
+  if (localStorage.getItem('ctfRegistrationCompleted') === 'true') {
+    hideRegistrationElements();
+    
+    // If registration was active tab, switch to participants
+    const activeTab = document.querySelector('.tab.active');
+    if (activeTab && activeTab.dataset.tab === 'registration') {
+      switchTab('participants');
+      // Update nav link
+      document.querySelector('.nav-bar a[data-tab="participants"]')?.classList.add('active');
+    }
+  }
 }
